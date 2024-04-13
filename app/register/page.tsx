@@ -1,60 +1,19 @@
-import { redirect } from "next/navigation"
+"use client"
+
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { createUser } from "@/app/lib/actions"
+import { handleRegisterFormSubmit } from "@/app/lib/actions"
 import Link from "next/link"
-import {
-  createOrg,
-  getUserInfo,
-  setTokenCookie,
-  updateOrgMemberRole,
-} from "@/app/lib/actions"
+
+import { useState } from "react"
 
 export default function Page() {
-  async function handleSubmit(formData: FormData) {
-    "use server"
-
-    const login = formData.get("login") as string
-    const name = formData.get("name") as string
-    const email = formData.get("email") as string
-    const password = formData.get("password") as string
-    const passwordConfirm = formData.get("passwordConfirm") as string
-
-    if (!login) throw "Missing login"
-    if (!name) throw "Missing name"
-    if (!email) throw "Missing email"
-    if (!password) throw "Missing password"
-    if (!passwordConfirm) throw "Missing passwordConfirm"
-
-    if (passwordConfirm !== password) throw "Password confirm does not match"
-
-    // Problem: org name might be taken already
-    // UUID would not be user-friendly
-    const { orgId } = await createOrg(login as string)
-
-    const newUser = {
-      name,
-      email,
-      login,
-      password,
-      OrgId: orgId,
-    }
-
-    const { id: userId } = await createUser(newUser)
-
-    await updateOrgMemberRole(orgId, userId, "Admin")
-
-    const user = await getUserInfo(name)
-
-    await setTokenCookie(user)
-
-    redirect("/orgs")
-  }
+  const [username, setUsername] = useState("")
 
   return (
     <form
-      action={handleSubmit}
+      action={handleRegisterFormSubmit}
       className="flex flex-col items-center gap-4 max-w-xl mx-auto my-6"
     >
       <h2 className="text-4xl">Register</h2>
@@ -69,12 +28,15 @@ export default function Page() {
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="username">Username</Label>
+        <Label htmlFor="login">Username</Label>
         <Input
           type="text"
-          id="username"
-          name="username"
+          id="login"
+          name="login"
           placeholder="Username"
+          onInput={({ target }: any) => {
+            setUsername(target.value)
+          }}
         />
       </div>
 
@@ -82,7 +44,7 @@ export default function Page() {
         <Label htmlFor="password">Password</Label>
         <Input
           type="password"
-          id="name"
+          id="password"
           name="password"
           placeholder="Password"
         />
@@ -95,6 +57,17 @@ export default function Page() {
           id="passwordConfirm"
           name="passwordConfirm"
           placeholder="Password confirm"
+        />
+      </div>
+
+      <div className="grid w-full max-w-sm items-center gap-1.5">
+        <Label htmlFor="org">Org</Label>
+        <Input
+          type="text"
+          id="org"
+          name="org"
+          placeholder="Organization name"
+          defaultValue={username}
         />
       </div>
 

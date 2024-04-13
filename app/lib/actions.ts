@@ -123,3 +123,43 @@ export async function updateOrgMemberRole(
     throw "Failed to update member role"
   }
 }
+
+export async function handleRegisterFormSubmit(formData: FormData) {
+  const login = formData.get("login") as string
+  const name = formData.get("name") as string
+  const email = formData.get("email") as string
+  const password = formData.get("password") as string
+  const passwordConfirm = formData.get("passwordConfirm") as string
+  const org = formData.get("org") as string
+
+  if (!login) throw "Missing login"
+  if (!name) throw "Missing name"
+  if (!email) throw "Missing email"
+  if (!password) throw "Missing password"
+  if (!passwordConfirm) throw "Missing passwordConfirm"
+  if (!org) throw "Missing org"
+
+  if (passwordConfirm !== password) throw "Password confirm does not match"
+
+  // Problem: org name might be taken already
+  // UUID would not be user-friendly
+  const { orgId } = await createOrg(org as string)
+
+  const newUser = {
+    name,
+    email,
+    login,
+    password,
+    OrgId: orgId,
+  }
+
+  const { id: userId } = await createUser(newUser)
+
+  await updateOrgMemberRole(orgId, userId, "Admin")
+
+  const user = await getUserInfo(name)
+
+  await setTokenCookie(user)
+
+  redirect("/orgs")
+}
