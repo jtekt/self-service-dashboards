@@ -1,28 +1,13 @@
-import { login } from "@/app/lib/actions"
+import { handleLoginSubmit } from "@/app/lib/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 export default function LoginPage() {
-  async function handleSubmit(formData: FormData) {
-    "use server"
-    const username = formData.get("username") as string
-    const password = formData.get("password") as string
-
-    if (!username) throw "Missing username"
-    if (!password) throw "Missing password"
-
-    const credentials = {
-      username,
-      password,
-    }
-
-    await login(credentials)
-  }
   return (
     <form
-      action={handleSubmit}
+      action={handleLoginSubmit}
       className="flex flex-col items-center gap-4 max-w-xl mx-auto my-6"
     >
       <h2 className="text-4xl">Login</h2>

@@ -3,7 +3,7 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { handleRegisterFormSubmit } from "@/app/lib/actions"
+import { handleRegisterSubmit } from "@/app/lib/actions"
 import Link from "next/link"
 
 import { useState } from "react"
@@ -13,7 +13,7 @@ export default function Page() {
 
   return (
     <form
-      action={handleRegisterFormSubmit}
+      action={handleRegisterSubmit}
       className="flex flex-col items-center gap-4 max-w-xl mx-auto my-6"
     >
       <h2 className="text-4xl">Register</h2>

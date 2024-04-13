@@ -10,6 +10,7 @@ import {
 } from "@/config"
 import * as jose from "jose"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 
 type Credentials = {
   username: string
@@ -26,17 +27,22 @@ type NewUser = {
   OrgId?: number
 }
 
-export async function createUser(newUser: NewUser) {
+async function createUser(newUser: NewUser) {
   const auth = {
     username: GRAFANA_ADMIN_USERNAME,
     password: GRAFANA_ADMIN_PASSWORD,
   }
   const url = `${GRAFANA_URL}/api/admin/users`
-  const { data } = await axios.post(url, newUser, { auth })
-  return data
+  try {
+    const { data } = await axios.post(url, newUser, { auth })
+    return data
+  } catch (error: any) {
+    if (error.response?.status === 409) throw new Error(`User already exists`)
+    throw new Error("User creation failed")
+  }
 }
 
-async function checkUserCredentials(auth: Credentials) {
+export async function checkUserCredentials(auth: Credentials) {
   // TODO: find better endpoint
   const url = `${GRAFANA_URL}/api/dashboards/home`
 
@@ -65,14 +71,6 @@ export async function setTokenCookie(user: any) {
   cookies().set(TOKEN_COOKIE, token)
 }
 
-export async function login(credentials: Credentials) {
-  await checkUserCredentials(credentials)
-  const user = await getUserInfo(credentials.username)
-  await setTokenCookie(user)
-
-  redirect("/orgs")
-}
-
 export async function createOrg(name: string) {
   const auth = {
     username: GRAFANA_ADMIN_USERNAME,
@@ -83,8 +81,9 @@ export async function createOrg(name: string) {
     const { data } = await axios.post(url, { name }, { auth })
     return data
   } catch (error: any) {
-    console.log(error.response?.data)
-    throw "Failed to create org"
+    if (error.response?.status === 409)
+      throw new Error(`Org "${name}" already exists`)
+    throw new Error("Org creation failed")
   }
 }
 
@@ -115,16 +114,11 @@ export async function updateOrgMemberRole(
 
   const url = `${GRAFANA_URL}/api/orgs/${orgId}/users/${userId}`
 
-  try {
-    const { data } = await axios.patch(url, { role }, { auth })
-    return data
-  } catch (error: any) {
-    console.log(error.response?.data)
-    throw "Failed to update member role"
-  }
+  const { data } = await axios.patch(url, { role }, { auth })
+  return data
 }
 
-export async function handleRegisterFormSubmit(formData: FormData) {
+export async function handleRegisterSubmit(formData: FormData) {
   const login = formData.get("login") as string
   const name = formData.get("name") as string
   const email = formData.get("email") as string
@@ -132,17 +126,16 @@ export async function handleRegisterFormSubmit(formData: FormData) {
   const passwordConfirm = formData.get("passwordConfirm") as string
   const org = formData.get("org") as string
 
-  if (!login) throw "Missing login"
-  if (!name) throw "Missing name"
-  if (!email) throw "Missing email"
-  if (!password) throw "Missing password"
-  if (!passwordConfirm) throw "Missing passwordConfirm"
-  if (!org) throw "Missing org"
+  // Validation
+  // TODO: Use a validation library
+  if (!login) throw new Error("Missing login")
+  if (!name) throw new Error("Missing name")
+  if (!email) throw new Error("Missing email")
+  if (!password) throw new Error("Missing password")
+  if (!passwordConfirm) throw new Error("Missing passwordConfirm")
+  if (!org) throw new Error("Missing org")
+  if (passwordConfirm !== password) throw new Error("Passwords do not match")
 
-  if (passwordConfirm !== password) throw "Password confirm does not match"
-
-  // Problem: org name might be taken already
-  // UUID would not be user-friendly
   const { orgId } = await createOrg(org as string)
 
   const newUser = {
@@ -160,6 +153,45 @@ export async function handleRegisterFormSubmit(formData: FormData) {
   const user = await getUserInfo(name)
 
   await setTokenCookie(user)
+
+  redirect("/orgs")
+}
+
+export async function handleOrgSubmit(formData: FormData) {
+  const head = headers()
+
+  const stringifiedUser = head.get("X-User")
+  if (!stringifiedUser) throw new Error("No user in X-User header")
+  const user = JSON.parse(stringifiedUser)
+
+  const name = formData.get("name")
+  if (!name) throw "Name not defined"
+  const { orgId } = await createOrg(name as string)
+  await addUserToOrg(user.login, orgId, "Admin")
+
+  redirect("/orgs")
+}
+
+export async function handleLoginSubmit(formData: FormData) {
+  const username = formData.get("username") as string
+  const password = formData.get("password") as string
+
+  if (!username) throw new Error("Missing username")
+  if (!password) throw new Error("Missing password")
+
+  const credentials = {
+    username,
+    password,
+  }
+
+  try {
+    await checkUserCredentials(credentials)
+    const user = await getUserInfo(credentials.username)
+    await setTokenCookie(user)
+  } catch (error) {
+    console.error(error)
+    throw new Error("Login failed")
+  }
 
   redirect("/orgs")
 }
