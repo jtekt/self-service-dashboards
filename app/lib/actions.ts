@@ -18,6 +18,24 @@ type Credentials = {
 
 type Role = "Viewer" | "Admin" | "Editor"
 
+type NewUser = {
+  login: string
+  password: string
+  email: string
+  name: string
+  OrgId?: number
+}
+
+export async function createUser(newUser: NewUser) {
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  }
+  const url = `${GRAFANA_URL}/api/admin/users`
+  const { data } = await axios.post(url, newUser, { auth })
+  return data
+}
+
 async function checkUserCredentials(auth: Credentials) {
   // TODO: find better endpoint
   const url = `${GRAFANA_URL}/api/dashboards/home`
@@ -47,22 +65,9 @@ export async function setTokenCookie(user: any) {
   cookies().set(TOKEN_COOKIE, token)
 }
 
-export async function login(formData: FormData) {
-  "use server"
-
-  const username = formData.get("username") as string
-  const password = formData.get("password") as string
-
-  if (!username) throw "Missing username"
-  if (!password) throw "Missing password"
-
-  const credentials = {
-    username,
-    password,
-  }
-
+export async function login(credentials: Credentials) {
   await checkUserCredentials(credentials)
-  const user = await getUserInfo(username)
+  const user = await getUserInfo(credentials.username)
   await setTokenCookie(user)
 
   redirect("/orgs")
