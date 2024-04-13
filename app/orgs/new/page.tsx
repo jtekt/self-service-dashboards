@@ -5,13 +5,10 @@ import { Button } from "@/components/ui/button"
 
 export default function Page() {
   return (
-    <form
-      action={handleOrgSubmit}
-      className="flex flex-col items-center gap-4 max-w-xl mx-auto my-6"
-    >
+    <form action={handleOrgSubmit} className="flex flex-col gap-4">
       <h2 className="text-4xl">Create a new organization</h2>
 
-      <div className="grid w-full max-w-sm items-center gap-1.5">
+      <div className="grid w-full items-center gap-1.5">
         <Label htmlFor="name">Name</Label>
         <Input
           type="text"

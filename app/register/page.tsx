@@ -9,8 +9,6 @@ import Link from "next/link"
 import { useState } from "react"
 
 export default function Page() {
-  const [username, setUsername] = useState("")
-
   return (
     <form
       action={handleRegisterSubmit}
@@ -29,15 +27,7 @@ export default function Page() {
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
         <Label htmlFor="login">Username</Label>
-        <Input
-          type="text"
-          id="login"
-          name="login"
-          placeholder="Username"
-          onInput={({ target }: any) => {
-            setUsername(target.value)
-          }}
-        />
+        <Input type="text" id="login" name="login" placeholder="Username" />
       </div>
 
       <div className="grid w-full max-w-sm items-center gap-1.5">
@@ -57,17 +47,6 @@ export default function Page() {
           id="passwordConfirm"
           name="passwordConfirm"
           placeholder="Password confirm"
-        />
-      </div>
-
-      <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="org">Org</Label>
-        <Input
-          type="text"
-          id="org"
-          name="org"
-          placeholder="Organization name"
-          defaultValue={username}
         />
       </div>
 

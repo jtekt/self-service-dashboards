@@ -1,3 +1,4 @@
+"use client"
 import { handleLoginSubmit } from "@/app/lib/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"

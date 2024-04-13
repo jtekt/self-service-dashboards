@@ -5,19 +5,20 @@ import {
   GRAFANA_ADMIN_USERNAME,
   GRAFANA_ADMIN_PASSWORD,
   GRAFANA_URL,
-  encodedJwtSecret,
+  GRAFANA_DEFAULT_ORG_ID,
   TOKEN_COOKIE,
+  encodedJwtSecret,
 } from "@/config"
 import * as jose from "jose"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 
+type Role = "Viewer" | "Admin" | "Editor"
+
 type Credentials = {
   username: string
   password: string
 }
-
-type Role = "Viewer" | "Admin" | "Editor"
 
 type NewUser = {
   login: string
@@ -28,6 +29,7 @@ type NewUser = {
 }
 
 async function createUser(newUser: NewUser) {
+  // https://grafana.com/docs/grafana/latest/developers/http_api/admin/#global-users
   const auth = {
     username: GRAFANA_ADMIN_USERNAME,
     password: GRAFANA_ADMIN_PASSWORD,
@@ -37,19 +39,22 @@ async function createUser(newUser: NewUser) {
     const { data } = await axios.post(url, newUser, { auth })
     return data
   } catch (error: any) {
-    if (error.response?.status === 409) throw new Error(`User already exists`)
+    if (error.response) throw new Error(error.response.data.message)
     throw new Error("User creation failed")
   }
 }
 
-export async function checkUserCredentials(auth: Credentials) {
+async function checkUserCredentials(auth: Credentials) {
+  // Using basic auth to check if the user provided credentials are correct
   // TODO: find better endpoint
   const url = `${GRAFANA_URL}/api/dashboards/home`
-
   await axios.get(url, { auth })
 }
 
-export async function getUserInfo(username: String) {
+async function getUserInfo(username: String) {
+  // Used after login or registration to create content of JWT
+  // The request must be sent authenticated as admin
+  // https://grafana.com/docs/grafana/latest/developers/http_api/user/#get-single-user-by-usernamelogin-or-email
   const auth = {
     username: GRAFANA_ADMIN_USERNAME,
     password: GRAFANA_ADMIN_PASSWORD,
@@ -63,15 +68,7 @@ export async function getUserInfo(username: String) {
   return data
 }
 
-export async function setTokenCookie(user: any) {
-  const token = await new jose.SignJWT(user)
-    .setProtectedHeader({ alg: "HS256" })
-    .sign(encodedJwtSecret)
-
-  cookies().set(TOKEN_COOKIE, token)
-}
-
-export async function createOrg(name: string) {
+async function createOrg(name: string) {
   const auth = {
     username: GRAFANA_ADMIN_USERNAME,
     password: GRAFANA_ADMIN_PASSWORD,
@@ -103,6 +100,7 @@ export async function addUserToOrg(
 }
 
 export async function updateOrgMemberRole(
+  // Unused
   orgId: string | number,
   userId: string | number,
   role: Role
@@ -118,13 +116,20 @@ export async function updateOrgMemberRole(
   return data
 }
 
+export async function setTokenCookie(user: any) {
+  const token = await new jose.SignJWT(user)
+    .setProtectedHeader({ alg: "HS256" })
+    .sign(encodedJwtSecret)
+
+  cookies().set(TOKEN_COOKIE, token)
+}
+
 export async function handleRegisterSubmit(formData: FormData) {
   const login = formData.get("login") as string
   const name = formData.get("name") as string
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   const passwordConfirm = formData.get("passwordConfirm") as string
-  const org = formData.get("org") as string
 
   // Validation
   // TODO: Use a validation library
@@ -133,22 +138,17 @@ export async function handleRegisterSubmit(formData: FormData) {
   if (!email) throw new Error("Missing email")
   if (!password) throw new Error("Missing password")
   if (!passwordConfirm) throw new Error("Missing passwordConfirm")
-  if (!org) throw new Error("Missing org")
   if (passwordConfirm !== password) throw new Error("Passwords do not match")
-
-  const { orgId } = await createOrg(org as string)
 
   const newUser = {
     name,
     email,
     login,
     password,
-    OrgId: orgId,
+    OrgId: Number(GRAFANA_DEFAULT_ORG_ID),
   }
 
-  const { id: userId } = await createUser(newUser)
-
-  await updateOrgMemberRole(orgId, userId, "Admin")
+  await createUser(newUser)
 
   const user = await getUserInfo(name)
 

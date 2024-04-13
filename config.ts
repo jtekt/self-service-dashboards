@@ -4,6 +4,7 @@ export const {
   GRAFANA_URL = "http://localhost:3000",
   JWT_SECRET = "sh...",
   TOKEN_COOKIE = "self_db_token",
+  GRAFANA_DEFAULT_ORG_ID = "1",
 } = process.env
 
 export const encodedJwtSecret = new TextEncoder().encode(JWT_SECRET)
