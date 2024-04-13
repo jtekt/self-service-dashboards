@@ -1,15 +1,15 @@
-import {
-  createOrg,
-  getUserInfo,
-  setTokenCookie,
-  updateOrgMemberRole,
-} from "@/app/lib/actions"
 import { redirect } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { createUser } from "@/app/lib/actions"
 import Link from "next/link"
+import {
+  createOrg,
+  getUserInfo,
+  setTokenCookie,
+  updateOrgMemberRole,
+} from "@/app/lib/actions"
 
 export default function Page() {
   async function handleSubmit(formData: FormData) {
@@ -21,9 +21,16 @@ export default function Page() {
     const password = formData.get("password") as string
     const passwordConfirm = formData.get("passwordConfirm") as string
 
+    if (!login) throw "Missing login"
+    if (!name) throw "Missing name"
+    if (!email) throw "Missing email"
+    if (!password) throw "Missing password"
+    if (!passwordConfirm) throw "Missing passwordConfirm"
+
     if (passwordConfirm !== password) throw "Password confirm does not match"
 
     // Problem: org name might be taken already
+    // UUID would not be user-friendly
     const { orgId } = await createOrg(login as string)
 
     const newUser = {
@@ -96,8 +103,11 @@ export default function Page() {
       </div>
 
       <div className="text-center">
-        Alreadfy have an account? Click <Link href="/login">here</Link> to log
-        in
+        Alreadfy have an account? Click{" "}
+        <Link href="/login" className="font-bold text-primary">
+          here
+        </Link>{" "}
+        to log in
       </div>
     </form>
   )

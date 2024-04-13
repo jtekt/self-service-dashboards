@@ -1,12 +1,20 @@
+import { headers } from "next/headers"
+import { Button } from "@/components/ui/button"
+import Link from "next/link"
 import axios from "axios"
 import {
   GRAFANA_ADMIN_USERNAME,
   GRAFANA_ADMIN_PASSWORD,
   GRAFANA_URL,
 } from "../../config"
-import { headers } from "next/headers"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 
 export default async function Page() {
   async function getData() {
@@ -36,16 +44,25 @@ export default async function Page() {
         <h1 className="text-4xl my-4">My Organizations</h1>
 
         <Button asChild>
-          <Link href="/orgs/new">Create new org</Link>
+          <Link href="/orgs/new">Create new</Link>
         </Button>
       </div>
-      <ul>
-        {data.map((org: any) => (
-          <li className="mt-2" key={org.id}>
-            {org.name}
-          </li>
-        ))}
-      </ul>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[100px]">Org name</TableHead>
+            <TableHead className="text-right">Role</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {data.map((org: any) => (
+            <TableRow key={org.orgId}>
+              <TableCell className="font-medium">{org.name}</TableCell>
+              <TableCell className="text-right">{org.role}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </>
   )
 }
