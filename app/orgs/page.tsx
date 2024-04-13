@@ -41,7 +41,9 @@ export default async function Page() {
       </div>
       <ul>
         {data.map((org: any) => (
-          <li className="mt-2">{org.name}</li>
+          <li className="mt-2" key={org.id}>
+            {org.name}
+          </li>
         ))}
       </ul>
     </>
