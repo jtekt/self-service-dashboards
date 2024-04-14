@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APPLICATION_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${APPLICATION_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${APPLICATION_NAME}
+    spec:
+      containers:
+        - name: ${APPLICATION_NAME}
+          image: ${CONTAINER_IMAGE_TAGGED}
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: env-secret
+      imagePullSecrets:
+        - name: ${K8S_ECR_SECRET_NAME}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${APPLICATION_NAME}
+spec:
+  ports:
+    - port: 3000
+      nodePort: ${K8S_NODEPORT}
+  selector:
+    app: ${APPLICATION_NAME}
+  type: NodePort
