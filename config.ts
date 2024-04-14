@@ -3,7 +3,7 @@ export const {
   GRAFANA_ADMIN_PASSWORD = "password",
   GRAFANA_URL = "http://localhost:3000",
   JWT_SECRET = "sh...",
-  TOKEN_COOKIE = "self_db_token",
+  TOKEN_COOKIE = "self_grafana_token",
   GRAFANA_DEFAULT_ORG_ID = "1",
 } = process.env
 
