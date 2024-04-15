@@ -3,12 +3,17 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { handleRegisterSubmit } from "@/app/lib/actions"
+import { registerUser } from "@/app/lib/actions"
+import { useFormState } from "react-dom"
 import Link from "next/link"
 
-import { useState } from "react"
+export default function RegisterPage() {
+  const initialState = {
+    message: "",
+  }
 
-export default function Page() {
+  const [state, handleRegisterSubmit] = useFormState(registerUser, initialState)
+
   return (
     <form
       action={handleRegisterSubmit}
@@ -53,6 +58,8 @@ export default function Page() {
       <div className="flex justify-center">
         <Button type="submit">Register</Button>
       </div>
+
+      {state.message ? <p className="text-red-600">{state?.message}</p> : null}
 
       <div className="text-center">
         Already have an account? Click{" "}

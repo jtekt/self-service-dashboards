@@ -8,7 +8,7 @@ import { useFormState } from "react-dom"
 
 export default function LoginPage() {
   const initialState = {
-    message: null,
+    message: "",
   }
 
   const [state, handleLoginSubmit] = useFormState(login, initialState)
@@ -44,11 +44,7 @@ export default function LoginPage() {
         <Button type="submit">Login</Button>
       </div>
 
-      {state.message ? (
-        <p aria-live="polite" className="">
-          {state?.message}
-        </p>
-      ) : null}
+      {state.message ? <p className="text-red-600">{state?.message}</p> : null}
 
       <div className="text-center">
         Don't have an account? Click{" "}

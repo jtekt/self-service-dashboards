@@ -1,9 +1,17 @@
-import { handleOrgSubmit } from "@/app/lib/actions"
+"use client"
+import { createOrgForUser } from "@/app/lib/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { useFormState } from "react-dom"
 
 export default function Page() {
+  const initialState = {
+    message: "",
+  }
+
+  const [state, handleOrgSubmit] = useFormState(createOrgForUser, initialState)
+
   return (
     <form action={handleOrgSubmit} className="flex flex-col gap-4">
       <h2 className="text-4xl">Create a new organization</h2>
@@ -17,6 +25,10 @@ export default function Page() {
           placeholder="Organization name"
         />
       </div>
+
+      {state.message ? (
+        <p className="text-center text-red-600">{state?.message}</p>
+      ) : null}
 
       <div className="flex justify-center">
         <Button type="submit">Create</Button>

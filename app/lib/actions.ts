@@ -74,14 +74,8 @@ async function createOrg(name: string) {
     password: GRAFANA_ADMIN_PASSWORD,
   }
   const url = `${GRAFANA_URL}/api/orgs`
-  try {
-    const { data } = await axios.post(url, { name }, { auth })
-    return data
-  } catch (error: any) {
-    if (error.response?.status === 409)
-      throw new Error(`Org "${name}" already exists`)
-    throw new Error("Org creation failed")
-  }
+  const { data } = await axios.post(url, { name }, { auth })
+  return data
 }
 
 export async function addUserToOrg(
@@ -124,21 +118,45 @@ export async function setTokenCookie(user: any) {
   cookies().set(TOKEN_COOKIE, token)
 }
 
-export async function handleRegisterSubmit(formData: FormData) {
+export async function createOrgForUser(prevState: any, formData: FormData) {
+  const head = headers()
+
+  const stringifiedUser = head.get("X-User")
+  if (!stringifiedUser) throw new Error("No user in X-User header")
+  const user = JSON.parse(stringifiedUser)
+
+  const name = formData.get("name")
+  if (!name) return { message: "Missing name" }
+
+  try {
+    const { orgId } = await createOrg(name as string)
+    await addUserToOrg(user.login, orgId, "Admin")
+  } catch (error: any) {
+    console.error(error)
+    return { message: error.response?.data?.message || "Org creation failed" }
+  }
+
+  redirect("/orgs")
+}
+
+export async function registerUser(prevState: any, formData: FormData) {
+  const missingProperties = [
+    "login",
+    "name",
+    "email",
+    "password",
+    "passwordConfirm",
+  ].filter((k) => !formData.get(k))
+  if (missingProperties.length)
+    return { message: `Missing ${missingProperties.join(", ")}` }
+
   const login = formData.get("login") as string
   const name = formData.get("name") as string
   const email = formData.get("email") as string
   const password = formData.get("password") as string
   const passwordConfirm = formData.get("passwordConfirm") as string
 
-  // Validation
-  // TODO: Use a validation library
-  if (!login) throw new Error("Missing login")
-  if (!name) throw new Error("Missing name")
-  if (!email) throw new Error("Missing email")
-  if (!password) throw new Error("Missing password")
-  if (!passwordConfirm) throw new Error("Missing passwordConfirm")
-  if (passwordConfirm !== password) throw new Error("Passwords do not match")
+  if (passwordConfirm !== password) return { message: "Passwords do not match" }
 
   const newUser = {
     name,
@@ -148,26 +166,14 @@ export async function handleRegisterSubmit(formData: FormData) {
     OrgId: Number(GRAFANA_DEFAULT_ORG_ID),
   }
 
-  await createUser(newUser)
-
-  const user = await getUserInfo(name)
-
-  await setTokenCookie(user)
-
-  redirect("/orgs")
-}
-
-export async function handleOrgSubmit(formData: FormData) {
-  const head = headers()
-
-  const stringifiedUser = head.get("X-User")
-  if (!stringifiedUser) throw new Error("No user in X-User header")
-  const user = JSON.parse(stringifiedUser)
-
-  const name = formData.get("name")
-  if (!name) throw "Name not defined"
-  const { orgId } = await createOrg(name as string)
-  await addUserToOrg(user.login, orgId, "Admin")
+  try {
+    await createUser(newUser)
+    const user = await getUserInfo(name)
+    await setTokenCookie(user)
+  } catch (error) {
+    console.error(error)
+    return { message: "User creation failed" }
+  }
 
   redirect("/orgs")
 }
