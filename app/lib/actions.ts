@@ -172,12 +172,12 @@ export async function handleOrgSubmit(formData: FormData) {
   redirect("/orgs")
 }
 
-export async function handleLoginSubmit(formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
   const username = formData.get("username") as string
   const password = formData.get("password") as string
 
-  if (!username) throw new Error("Missing username")
-  if (!password) throw new Error("Missing password")
+  if (!username) return { message: "Missing username" }
+  if (!password) return { message: "Missing password" }
 
   const credentials = {
     username,
@@ -188,9 +188,9 @@ export async function handleLoginSubmit(formData: FormData) {
     await checkUserCredentials(credentials)
     const user = await getUserInfo(credentials.username)
     await setTokenCookie(user)
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
-    throw new Error("Login failed")
+    return { message: error.response?.data?.message || "Login failed" }
   }
 
   redirect("/orgs")

@@ -55,7 +55,7 @@ export default function Page() {
       </div>
 
       <div className="text-center">
-        Alreadfy have an account? Click{" "}
+        Already have an account? Click{" "}
         <Link href="/login" className="font-bold text-primary">
           here
         </Link>{" "}

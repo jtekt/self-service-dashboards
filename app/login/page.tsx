@@ -1,11 +1,18 @@
 "use client"
-import { handleLoginSubmit } from "@/app/lib/actions"
+import { login } from "@/app/lib/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { useFormState } from "react-dom"
 
 export default function LoginPage() {
+  const initialState = {
+    message: null,
+  }
+
+  const [state, handleLoginSubmit] = useFormState(login, initialState)
+
   return (
     <form
       action={handleLoginSubmit}
@@ -36,6 +43,12 @@ export default function LoginPage() {
       <div className="flex justify-center">
         <Button type="submit">Login</Button>
       </div>
+
+      {state.message ? (
+        <p aria-live="polite" className="">
+          {state?.message}
+        </p>
+      ) : null}
 
       <div className="text-center">
         Don't have an account? Click{" "}
