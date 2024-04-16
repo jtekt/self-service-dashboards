@@ -50,7 +50,7 @@ export default async function Page() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">Org name</TableHead>
+            <TableHead className="">Org name</TableHead>
             <TableHead className="text-right">Role</TableHead>
           </TableRow>
         </TableHeader>
