@@ -51,7 +51,7 @@ async function checkUserCredentials(auth: Credentials) {
   await axios.get(url, { auth })
 }
 
-async function getUserInfo(username: String) {
+async function getUserInfo(loginOrEmail: String) {
   // Used after login or registration to create content of JWT
   // The request must be sent authenticated as admin
   // https://grafana.com/docs/grafana/latest/developers/http_api/user/#get-single-user-by-usernamelogin-or-email
@@ -62,7 +62,7 @@ async function getUserInfo(username: String) {
 
   const url = `${GRAFANA_URL}/api/users/lookup`
 
-  const params = { loginOrEmail: username }
+  const params = { loginOrEmail }
 
   const { data } = await axios.get(url, { auth, params })
   return data
@@ -168,7 +168,7 @@ export async function registerUser(prevState: any, formData: FormData) {
 
   try {
     await createUser(newUser)
-    const user = await getUserInfo(name)
+    const user = await getUserInfo(login)
     await setTokenCookie(user)
   } catch (error) {
     console.error(error)
