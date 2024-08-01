@@ -8,6 +8,7 @@ import {
   GRAFANA_DEFAULT_ORG_ID,
   TOKEN_COOKIE,
   encodedJwtSecret,
+  PREVENT_REGISTRATION,
 } from "@/config"
 import * as jose from "jose"
 import { redirect } from "next/navigation"
@@ -140,6 +141,9 @@ export async function createOrgForUser(prevState: any, formData: FormData) {
 }
 
 export async function registerUser(prevState: any, formData: FormData) {
+  if (PREVENT_REGISTRATION)
+    return { message: "Registrations are not allowed on this instance" }
+
   const missingProperties = [
     "login",
     "name",
@@ -200,4 +204,8 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   redirect("/orgs")
+}
+
+export async function checkRegistrationPossible() {
+  return !PREVENT_REGISTRATION
 }

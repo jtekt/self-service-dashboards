@@ -1,17 +1,21 @@
 "use client"
-import { login } from "@/app/lib/actions"
+import { login, checkRegistrationPossible } from "@/app/lib/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useFormState } from "react-dom"
+import { useEffect, useState } from "react"
 
 export default function LoginPage() {
-  const initialState = {
+  const [state, handleLoginSubmit] = useFormState(login, {
     message: "",
-  }
+  })
+  const [registrationPossible, setRegistrationPossible] = useState(false)
 
-  const [state, handleLoginSubmit] = useFormState(login, initialState)
+  useEffect(() => {
+    checkRegistrationPossible().then(setRegistrationPossible)
+  }, [])
 
   return (
     <form
@@ -46,13 +50,15 @@ export default function LoginPage() {
 
       {state.message ? <p className="text-red-600">{state?.message}</p> : null}
 
-      <div className="text-center">
-        Don't have an account? Click{" "}
-        <Link href="/register" className="text-primary font-bold">
-          here
-        </Link>{" "}
-        to register
-      </div>
+      {registrationPossible ? (
+        <div className="text-center">
+          Don't have an account? Click{" "}
+          <Link href="/register" className="text-primary font-bold">
+            here
+          </Link>{" "}
+          to register
+        </div>
+      ) : null}
     </form>
   )
 }
