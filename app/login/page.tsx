@@ -1,25 +1,24 @@
 "use client"
-import { login, checkRegistrationPossible } from "@/app/lib/actions"
+import Link from "next/link"
+import { login } from "@/app/lib/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
 import { useFormState } from "react-dom"
-import { useEffect, useState } from "react"
+import { Loader2 } from "lucide-react"
+import { env } from "next-runtime-env"
+import { SubmitButton } from "@/components/SubmitButton"
 
 export default function LoginPage() {
-  const [state, handleLoginSubmit] = useFormState(login, {
+  const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION")
+
+  const [state, action] = useFormState(login, {
     message: "",
   })
-  const [registrationPossible, setRegistrationPossible] = useState(false)
-
-  useEffect(() => {
-    checkRegistrationPossible().then(setRegistrationPossible)
-  }, [])
 
   return (
     <form
-      action={handleLoginSubmit}
+      action={action}
       className="flex flex-col items-center gap-4 max-w-xl mx-auto my-6"
     >
       <h2 className="text-4xl">Login</h2>
@@ -45,7 +44,7 @@ export default function LoginPage() {
       </div>
 
       <div className="flex justify-center">
-        <Button type="submit">Login</Button>
+        <SubmitButton text="login" />
       </div>
 
       {state.message ? <p className="text-red-600">{state?.message}</p> : null}

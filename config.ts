@@ -5,7 +5,6 @@ export const {
   GRAFANA_DEFAULT_ORG_ID = "1",
   JWT_SECRET = "sh...",
   TOKEN_COOKIE = "self_grafana_token",
-  PREVENT_REGISTRATION,
 } = process.env
 
 export const encodedJwtSecret = new TextEncoder().encode(JWT_SECRET)

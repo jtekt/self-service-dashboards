@@ -3,24 +3,19 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { registerUser, checkRegistrationPossible } from "@/app/lib/actions"
+import { registerUser } from "@/app/lib/actions"
 import { useFormState } from "react-dom"
-import { useEffect, useState } from "react"
+import { env } from "next-runtime-env"
 
 import Link from "next/link"
+import { SubmitButton } from "@/components/SubmitButton"
 
 export default function RegisterPage() {
   const [state, handleRegisterSubmit] = useFormState(registerUser, {
     message: "",
   })
 
-  const [registrationPossible, setRegistrationPossible] = useState<
-    boolean | undefined
-  >(undefined)
-
-  useEffect(() => {
-    checkRegistrationPossible().then(setRegistrationPossible)
-  }, [])
+  const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION")
 
   return (
     <>
@@ -66,7 +61,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="flex justify-center">
-            <Button type="submit">Register</Button>
+            <SubmitButton text="Register" />
           </div>
 
           {state.message ? (

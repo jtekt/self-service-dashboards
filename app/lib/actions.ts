@@ -1,18 +1,14 @@
 "use server"
-import { cookies } from "next/headers"
 import axios from "axios"
 import {
   GRAFANA_ADMIN_USERNAME,
   GRAFANA_ADMIN_PASSWORD,
   GRAFANA_URL,
   GRAFANA_DEFAULT_ORG_ID,
-  TOKEN_COOKIE,
-  encodedJwtSecret,
-  PREVENT_REGISTRATION,
 } from "@/config"
-import * as jose from "jose"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
+import { createSession } from "@/app/lib/session"
 
 type Role = "Viewer" | "Admin" | "Editor"
 
@@ -111,14 +107,6 @@ export async function updateOrgMemberRole(
   return data
 }
 
-export async function setTokenCookie(user: any) {
-  const token = await new jose.SignJWT(user)
-    .setProtectedHeader({ alg: "HS256" })
-    .sign(encodedJwtSecret)
-
-  cookies().set(TOKEN_COOKIE, token)
-}
-
 export async function createOrgForUser(prevState: any, formData: FormData) {
   const head = headers()
 
@@ -173,7 +161,7 @@ export async function registerUser(prevState: any, formData: FormData) {
   try {
     await createUser(newUser)
     const user = await getUserInfo(login)
-    await setTokenCookie(user)
+    await createSession(user)
   } catch (error) {
     console.error(error)
     return { message: "User creation failed" }
@@ -182,9 +170,9 @@ export async function registerUser(prevState: any, formData: FormData) {
   redirect("/orgs")
 }
 
-export async function login(prevState: any, formData: FormData) {
-  const username = formData.get("username") as string
-  const password = formData.get("password") as string
+export async function login(state: any, formData: FormData) {
+  const username = formData.get("username")?.toString()
+  const password = formData.get("password")?.toString()
 
   if (!username) return { message: "Missing username" }
   if (!password) return { message: "Missing password" }
@@ -197,15 +185,11 @@ export async function login(prevState: any, formData: FormData) {
   try {
     await checkUserCredentials(credentials)
     const user = await getUserInfo(credentials.username)
-    await setTokenCookie(user)
+    await createSession(user)
   } catch (error: any) {
     console.error(error)
     return { message: error.response?.data?.message || "Login failed" }
   }
 
   redirect("/orgs")
-}
-
-export async function checkRegistrationPossible() {
-  return !PREVENT_REGISTRATION
 }

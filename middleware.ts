@@ -14,6 +14,7 @@ export async function middleware(request: NextRequest) {
 
   // Passing user data as stringified json
   // This is quite sketchy
+  // TODO: see Self-DB
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set("X-User", JSON.stringify(currentUser))
   return NextResponse.next({
