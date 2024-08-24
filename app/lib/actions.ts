@@ -129,9 +129,6 @@ export async function createOrgForUser(prevState: any, formData: FormData) {
 }
 
 export async function registerUser(prevState: any, formData: FormData) {
-  if (PREVENT_REGISTRATION)
-    return { message: "Registrations are not allowed on this instance" }
-
   const missingProperties = [
     "login",
     "name",
