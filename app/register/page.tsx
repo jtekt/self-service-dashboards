@@ -2,7 +2,6 @@
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
 import { registerUser } from "@/app/lib/actions"
 import { useFormState } from "react-dom"
 import { env } from "next-runtime-env"

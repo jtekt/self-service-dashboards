@@ -2,15 +2,11 @@
 import { createOrgForUser } from "@/app/lib/actions"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
 import { useFormState } from "react-dom"
+import { SubmitButton } from "@/components/SubmitButton"
 
 export default function Page() {
-  const initialState = {
-    message: "",
-  }
-
-  const [state, handleOrgSubmit] = useFormState(createOrgForUser, initialState)
+  const [state, handleOrgSubmit] = useFormState(createOrgForUser, undefined)
 
   return (
     <form action={handleOrgSubmit} className="flex flex-col gap-4">
@@ -26,12 +22,12 @@ export default function Page() {
         />
       </div>
 
-      {state.message ? (
+      {state?.message && (
         <p className="text-center text-red-600">{state?.message}</p>
-      ) : null}
+      )}
 
       <div className="flex justify-center">
-        <Button type="submit">Create</Button>
+        <SubmitButton text="create" />
       </div>
     </form>
   )
