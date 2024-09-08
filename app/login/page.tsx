@@ -9,6 +9,7 @@ import { SubmitButton } from "@/components/SubmitButton"
 
 export default function LoginPage() {
   const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION")
+  const loginHint = env("NEXT_PUBLIC_LOGIN_HINT")
 
   const [state, action] = useFormState(login, {
     message: "",
@@ -41,13 +42,15 @@ export default function LoginPage() {
         />
       </div>
 
+      {loginHint ?? <div className="text-xs">{loginHint}</div>}
+
       <div className="flex justify-center">
         <SubmitButton text="login" />
       </div>
 
-      {state.message ? <p className="text-red-600">{state?.message}</p> : null}
+      {state.message ?? <p className="text-red-600">{state?.message}</p>}
 
-      {registrationPossible ? (
+      {registrationPossible ?? (
         <div className="text-center">
           Don't have an account? Click{" "}
           <Link href="/register" className="text-primary font-bold">
@@ -55,7 +58,7 @@ export default function LoginPage() {
           </Link>{" "}
           to register
         </div>
-      ) : null}
+      )}
     </form>
   )
 }

@@ -19,9 +19,10 @@ spec:
           env:
             - name: GRAFANA_URL
               value: http://grafana:3000
-
             - name: NEXT_PUBLIC_PREVENT_REGISTRATION
               value: "true"
+            - name: NEXT_PUBLIC_LOGIN_HINT
+              value: "ユーザー名: 00 + 社員番号、パスワード: 個人端末と同じ"
           envFrom:
             - secretRef:
                 name: env-secret
