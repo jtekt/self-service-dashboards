@@ -1,12 +1,12 @@
-"use client"
-import { createOrgForUser } from "@/app/lib/actions"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useFormState } from "react-dom"
-import { SubmitButton } from "@/components/SubmitButton"
+"use client";
+import { createOrgForUser } from "@/lib/actions";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useFormState } from "react-dom";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default function Page() {
-  const [state, handleOrgSubmit] = useFormState(createOrgForUser, undefined)
+  const [state, handleOrgSubmit] = useFormState(createOrgForUser, undefined);
 
   return (
     <form action={handleOrgSubmit} className="flex flex-col gap-4">
@@ -30,5 +30,5 @@ export default function Page() {
         <SubmitButton text="create" />
       </div>
     </form>
-  )
+  );
 }

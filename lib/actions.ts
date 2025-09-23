@@ -1,0 +1,193 @@
+"use server";
+import axios from "axios";
+import {
+  GRAFANA_ADMIN_USERNAME,
+  GRAFANA_ADMIN_PASSWORD,
+  GRAFANA_URL,
+  GRAFANA_DEFAULT_ORG_ID,
+} from "@/config";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { createSession } from "@/lib/session";
+
+type Role = "Viewer" | "Admin" | "Editor";
+
+type Credentials = {
+  username: string;
+  password: string;
+};
+
+type NewUser = {
+  login: string;
+  password: string;
+  email: string;
+  name: string;
+  OrgId?: number;
+};
+
+async function createUser(newUser: NewUser) {
+  // https://grafana.com/docs/grafana/latest/developers/http_api/admin/#global-users
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  };
+  const url = `${GRAFANA_URL}/api/admin/users`;
+  try {
+    const { data } = await axios.post(url, newUser, { auth });
+    return data;
+  } catch (error: any) {
+    if (error.response) throw new Error(error.response.data.message);
+    throw new Error("User creation failed");
+  }
+}
+
+async function checkUserCredentials(auth: Credentials) {
+  // Using basic auth to check if the user provided credentials are correct
+  // TODO: find better endpoint
+  const url = `${GRAFANA_URL}/api/dashboards/home`;
+  await axios.get(url, { auth });
+}
+
+async function getUserInfo(loginOrEmail: String) {
+  // Used after login or registration to create content of JWT
+  // The request must be sent authenticated as admin
+  // https://grafana.com/docs/grafana/latest/developers/http_api/user/#get-single-user-by-usernamelogin-or-email
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  };
+
+  const url = `${GRAFANA_URL}/api/users/lookup`;
+
+  const params = { loginOrEmail };
+
+  const { data } = await axios.get(url, { auth, params });
+  return data;
+}
+
+async function createOrg(name: string) {
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  };
+  const url = `${GRAFANA_URL}/api/orgs`;
+  const { data } = await axios.post(url, { name }, { auth });
+  return data;
+}
+
+export async function addUserToOrg(
+  loginOrEmail: string | number,
+  orgId: string | number,
+  role: Role
+) {
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  };
+
+  const url = `${GRAFANA_URL}/api/orgs/${orgId}/users`;
+  const { data } = await axios.post(url, { loginOrEmail, role }, { auth });
+  return data;
+}
+
+export async function updateOrgMemberRole(
+  // Unused
+  orgId: string | number,
+  userId: string | number,
+  role: Role
+) {
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  };
+
+  const url = `${GRAFANA_URL}/api/orgs/${orgId}/users/${userId}`;
+
+  const { data } = await axios.patch(url, { role }, { auth });
+  return data;
+}
+
+export async function createOrgForUser(prevState: any, formData: FormData) {
+  const head = headers();
+
+  const stringifiedUser = head.get("X-User");
+  if (!stringifiedUser) throw new Error("No user in X-User header");
+  const user = JSON.parse(stringifiedUser);
+
+  const name = formData.get("name");
+  if (!name) return { message: "Missing name" };
+
+  try {
+    const { orgId } = await createOrg(name as string);
+    await addUserToOrg(user.login, orgId, "Admin");
+  } catch (error: any) {
+    console.error(error);
+    return { message: error.response?.data?.message || "Org creation failed" };
+  }
+
+  redirect("/orgs");
+}
+
+export async function registerUser(prevState: any, formData: FormData) {
+  const missingProperties = [
+    "login",
+    "name",
+    "email",
+    "password",
+    "passwordConfirm",
+  ].filter((k) => !formData.get(k));
+  if (missingProperties.length)
+    return { message: `Missing ${missingProperties.join(", ")}` };
+
+  const login = formData.get("login") as string;
+  const name = formData.get("name") as string;
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const passwordConfirm = formData.get("passwordConfirm") as string;
+
+  if (passwordConfirm !== password)
+    return { message: "Passwords do not match" };
+
+  const newUser = {
+    name,
+    email,
+    login,
+    password,
+    OrgId: Number(GRAFANA_DEFAULT_ORG_ID),
+  };
+
+  try {
+    await createUser(newUser);
+    const user = await getUserInfo(login);
+    await createSession(user);
+  } catch (error) {
+    console.error(error);
+    return { message: "User creation failed" };
+  }
+
+  redirect("/orgs");
+}
+
+export async function login(state: any, formData: FormData) {
+  const username = formData.get("username")?.toString();
+  const password = formData.get("password")?.toString();
+
+  if (!username) return { message: "Missing username" };
+  if (!password) return { message: "Missing password" };
+
+  const credentials = {
+    username,
+    password,
+  };
+
+  try {
+    await checkUserCredentials(credentials);
+    const user = await getUserInfo(credentials.username);
+    await createSession(user);
+  } catch (error: any) {
+    console.error(error);
+    return { message: error.response?.data?.message || "Login failed" };
+  }
+
+  redirect("/orgs");
+}

@@ -1,19 +1,19 @@
-"use client"
-import Link from "next/link"
-import { login } from "@/app/lib/actions"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { useFormState } from "react-dom"
-import { env } from "next-runtime-env"
-import { SubmitButton } from "@/components/SubmitButton"
+"use client";
+import Link from "next/link";
+import { login } from "@/lib/actions";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useFormState } from "react-dom";
+import { env } from "next-runtime-env";
+import { SubmitButton } from "@/components/SubmitButton";
 
 export default function LoginPage() {
-  const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION")
-  const loginHint = env("NEXT_PUBLIC_LOGIN_HINT")
+  const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION");
+  const loginHint = env("NEXT_PUBLIC_LOGIN_HINT");
 
   const [state, action] = useFormState(login, {
     message: "",
-  })
+  });
 
   return (
     <form
@@ -60,5 +60,5 @@ export default function LoginPage() {
         </div>
       )}
     </form>
-  )
+  );
 }
