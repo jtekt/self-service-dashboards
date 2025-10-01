@@ -1,5 +1,5 @@
 "use client";
-import { createOrgForUser } from "@/lib/actions";
+import { createOrgForUser } from "@/actions/orgs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFormState } from "react-dom";

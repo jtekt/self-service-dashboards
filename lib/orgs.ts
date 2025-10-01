@@ -4,12 +4,10 @@ import {
   GRAFANA_URL,
 } from "@/config";
 import axios from "axios";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 
 type Role = "Viewer" | "Admin" | "Editor";
 
-async function createOrg(name: string) {
+export async function createOrg(name: string) {
   const auth = {
     username: GRAFANA_ADMIN_USERNAME,
     password: GRAFANA_ADMIN_PASSWORD,
@@ -51,23 +49,13 @@ export async function updateOrgMemberRole(
   return data;
 }
 
-export async function createOrgForUser(prevState: any, formData: FormData) {
-  const head = headers();
+export async function getUserOrgs(userId: number | string) {
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  };
 
-  const stringifiedUser = head.get("X-User");
-  if (!stringifiedUser) throw new Error("No user in X-User header");
-  const user = JSON.parse(stringifiedUser);
-
-  const name = formData.get("name");
-  if (!name) return { message: "Missing name" };
-
-  try {
-    const { orgId } = await createOrg(name as string);
-    await addUserToOrg(user.login, orgId, "Admin");
-  } catch (error: any) {
-    console.error(error);
-    return { message: error.response?.data?.message || "Org creation failed" };
-  }
-
-  redirect("/orgs");
+  const url = `${GRAFANA_URL}/api/users/${userId}/orgs`;
+  const { data } = await axios.get(url, { auth });
+  return data;
 }
