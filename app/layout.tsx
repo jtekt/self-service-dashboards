@@ -20,7 +20,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <PublicEnvScript />
       </head>
@@ -31,10 +31,11 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <header className="p-4 text-2xl border-b">
-            Self service dashboards
+          {children}
+          {/* <header className="p-4 text-2xl border-b">
+            Self service Dashboards
           </header>
-          <main className="max-w-3xl mx-auto p-4">{children}</main>
+          <main className="max-w-3xl mx-auto p-4">{children}</main> */}
         </ThemeProvider>
       </body>
     </html>

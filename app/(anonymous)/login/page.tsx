@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { login } from "@/lib/actions";
+import { loginAction } from "@/actions/auth";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useFormState } from "react-dom";
@@ -11,7 +11,7 @@ export default function LoginPage() {
   const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION");
   const loginHint = env("NEXT_PUBLIC_LOGIN_HINT");
 
-  const [state, action] = useFormState(login, {
+  const [state, action] = useFormState(loginAction, {
     message: "",
   });
 

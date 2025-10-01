@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { registerUser } from "@/lib/actions";
+import { registerUserAction } from "@/actions/auth";
 import { useFormState } from "react-dom";
 import { env } from "next-runtime-env";
 
@@ -10,7 +10,7 @@ import Link from "next/link";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default function RegisterPage() {
-  const [state, handleRegisterSubmit] = useFormState(registerUser, {
+  const [state, handleRegisterSubmit] = useFormState(registerUserAction, {
     message: "",
   });
 

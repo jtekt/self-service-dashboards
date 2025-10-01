@@ -13,6 +13,7 @@ export async function middleware(request: NextRequest) {
   if (!currentUser) return Response.redirect(new URL("/login", request.url));
 
   // Passing user data as stringified json
+  // Used in the /orgs page
   // This is quite sketchy
   // TODO: see Self-service DB implementation
   const requestHeaders = new Headers(request.headers);
