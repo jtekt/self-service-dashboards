@@ -1,13 +1,14 @@
-import { useFormStatus } from "react-dom"
-import { Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
+// TODO: this button does not need to exist as useActionState would include the pending state
+import { useFormStatus } from "react-dom";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Props = {
-  text: string
-}
+  text: string;
+};
 
 export function SubmitButton(props: Props) {
-  const { pending } = useFormStatus()
+  const { pending } = useFormStatus();
 
   return (
     <Button disabled={pending} type="submit" className="block mx-auto">
@@ -17,5 +18,5 @@ export function SubmitButton(props: Props) {
         <span>{props.text}</span>
       )}
     </Button>
-  )
+  );
 }

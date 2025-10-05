@@ -12,17 +12,7 @@ export async function middleware(request: NextRequest) {
   const currentUser = (await jose.jwtVerify(token, encodedJwtSecret)).payload;
   if (!currentUser) return Response.redirect(new URL("/login", request.url));
 
-  // Passing user data as stringified json
-  // Used in the /orgs page
-  // This is quite sketchy
-  // TODO: see Self-service DB implementation
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("X-User", JSON.stringify(currentUser));
-  return NextResponse.next({
-    request: {
-      headers: requestHeaders,
-    },
-  });
+  return NextResponse.next();
 }
 
 // This is needed, do not remove
