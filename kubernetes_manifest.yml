@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ${APPLICATION_NAME}
+  name: self-grafana
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ${APPLICATION_NAME}
+      app: self-grafana
   template:
     metadata:
       labels:
-        app: ${APPLICATION_NAME}
+        app: self-grafana
     spec:
       containers:
-        - name: ${APPLICATION_NAME}
+        - name: self-grafana
           image: ${CONTAINER_IMAGE_TAGGED}
 
           env:
@@ -26,18 +26,15 @@ spec:
           envFrom:
             - secretRef:
                 name: env-secret
-      imagePullSecrets:
-        - name: ${K8S_ECR_SECRET_NAME}
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: ${APPLICATION_NAME}
+  name: self-grafana
 spec:
   ports:
     - port: 3000
-      nodePort: ${K8S_NODEPORT}
+      nodePort: 30299
   selector:
-    app: ${APPLICATION_NAME}
+    app: self-grafana
   type: NodePort

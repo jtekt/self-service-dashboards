@@ -2,37 +2,23 @@ stages:
   - build
   - deploy
 
-image: moreillon/ci-dind:4bca50d7
-services:
-  - name: docker:24.0.7-dind
-
 variables:
-  APPLICATION_NAME: self-grafana
+  APPLICATION_NAME: self-service-dashboards
   CONTAINER_IMAGE_NAME: ${APPLICATION_NAME}
-  CONTAINER_IMAGE: ${AWS_ECR_URL}/${CONTAINER_IMAGE_NAME}
+  CONTAINER_IMAGE: ${AWS_ECR_PUBLIC_URL}/${CONTAINER_IMAGE_NAME}
   CONTAINER_IMAGE_TAGGED: ${CONTAINER_IMAGE}:${CI_COMMIT_SHORT_SHA}
-  K8S_NODEPORT: 30299
-  K8S_ECR_SECRET_NAME: ecr-credentials
 
 build:
   stage: build
-  tags:
-    - dind
+  image: moreillon/tdd-dind
   only:
     - master
     - main
   before_script:
-    # Create repository if needed
+    - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${AWS_ECR_PUBLIC_URL}
     - >
-      aws ecr create-repository --repository-name ${CONTAINER_IMAGE_NAME}
+      aws ecr-public create-repository --region us-east-1 --repository-name ${APPLICATION_NAME}
       || echo "Repository might have already existed"
-    # Log in to the registry (AWS credentials are stored as GitLab env variables)
-    - >
-      aws ecr get-login-password
-      | docker login
-      --username AWS
-      --password-stdin
-      ${AWS_ECR_URL}
   script:
     - docker build -t ${CONTAINER_IMAGE_TAGGED} .
     - docker push ${CONTAINER_IMAGE_TAGGED}
@@ -44,15 +30,6 @@ deploy:
   only:
     - master
     - main
-  before_script:
-    - >
-      kubectl create secret docker-registry ${K8S_ECR_SECRET_NAME}
-      --docker-server=${AWS_ECR_URL}
-      --docker-username=AWS
-      --docker-password $(aws ecr get-login-password)
-      --dry-run=client -o yaml
-      | kubectl apply -f -
-
   script:
     - envsubst < kubernetes_manifest.yml | kubectl apply -f -
   environment:
