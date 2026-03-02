@@ -38,3 +38,30 @@ spec:
   selector:
     app: self-grafana
   type: NodePort
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: self-grafana
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Self-Service Suite
+    gethomepage.dev/name: Self-service Dashboards
+    gethomepage.dev/description: Allows users to create organizations in Grafana on their own
+    gethomepage.dev/icon: https://gitlab.jtektrnd.net/uploads/-/system/project/avatar/2261/self-grafana.png
+    gethomepage.dev/pod-selector: app=self-grafana
+
+spec:
+  rules:
+    - host: self-service-dashboards.higashikariya.jtektrnd.net
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: self-grafana
+                port:
+                  number: 3000
