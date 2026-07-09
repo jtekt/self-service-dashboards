@@ -1,6 +1,5 @@
 stages:
   - build
-  - deploy
 
 variables:
   APPLICATION_NAME: self-service-dashboards
@@ -10,7 +9,6 @@ variables:
 
 build:
   stage: build
-  image: moreillon/tdd-dind
   only:
     - master
     - main
@@ -22,17 +20,3 @@ build:
   script:
     - docker build -t ${CONTAINER_IMAGE_TAGGED} .
     - docker push ${CONTAINER_IMAGE_TAGGED}
-
-deploy:
-  stage: deploy
-  tags:
-    - dind
-  only:
-    - master
-    - main
-  script:
-    - envsubst < kubernetes_manifest.yml | kubectl apply -f -
-  environment:
-    name: staging
-    kubernetes:
-      namespace: ${K8S_NAMESPACE}
