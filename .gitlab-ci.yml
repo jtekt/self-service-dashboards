@@ -9,7 +9,6 @@ variables:
 
 build:
   stage: build
-  image: moreillon/tdd-dind
   only:
     - master
     - main
