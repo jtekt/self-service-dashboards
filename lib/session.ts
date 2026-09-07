@@ -8,19 +8,19 @@ export type User = {
   login: string;
 };
 
-export async function createSession(user: any) {
+export async function createSession(user: jose.JWTPayload) {
   const token = await new jose.SignJWT(user)
     .setProtectedHeader({ alg: "HS256" })
     .sign(encodedJwtSecret);
 
-  cookies().set(TOKEN_COOKIE, token);
+  (await cookies()).set(TOKEN_COOKIE, token);
 }
 
 export async function deleteSession() {
-  cookies().delete(TOKEN_COOKIE);
+  (await cookies()).delete(TOKEN_COOKIE);
 }
 export async function getUserFromSession() {
-  const token = cookies().get(TOKEN_COOKIE)?.value;
+  const token = (await cookies()).get(TOKEN_COOKIE)?.value;
   if (!token) return null;
   const currentUser = (await jose.jwtVerify(token, encodedJwtSecret)).payload;
   if (!currentUser) return null;

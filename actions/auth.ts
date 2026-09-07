@@ -4,7 +4,19 @@ import { createSession, deleteSession } from "@/lib/session";
 import { checkUserCredentials, createUser, getUserInfo } from "@/lib/users";
 import { redirect } from "next/navigation";
 
-export async function loginAction(state: any, formData: FormData) {
+type FormState = { message: string };
+
+function errorMessage(error: unknown, fallback: string): string {
+  return (
+    (error as { response?: { data?: { message?: string } } }).response?.data
+      ?.message || fallback
+  );
+}
+
+export async function loginAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const username = formData.get("username")?.toString();
   const password = formData.get("password")?.toString();
 
@@ -20,20 +32,23 @@ export async function loginAction(state: any, formData: FormData) {
     await checkUserCredentials(credentials);
     const user = await getUserInfo(credentials.username);
     await createSession(user);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
-    return { message: error.response?.data?.message || "Login failed" };
+    return { message: errorMessage(error, "Login failed") };
   }
 
   redirect("/orgs");
 }
 
 export async function logoutAction() {
-  deleteSession();
+  await deleteSession();
   redirect("/login");
 }
 
-export async function registerUserAction(prevState: any, formData: FormData) {
+export async function registerUserAction(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const missingProperties = [
     "login",
     "name",

@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { TOKEN_COOKIE, encodedJwtSecret } from "@/config";
 import * as jose from "jose";
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   // Middleware used for authentication
   const anonymousRoutes = ["/login", "/register"];
   if (anonymousRoutes.includes(request.nextUrl.pathname)) return;

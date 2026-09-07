@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/table";
 import { getUserOrgsAction } from "@/actions/orgs";
 
+type Org = { orgId: number; name: string; role: string };
+
 export default async function Page() {
   const data = await getUserOrgsAction();
 
@@ -31,7 +33,7 @@ export default async function Page() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((org: any) => (
+          {(data as Org[]).map((org) => (
             <TableRow key={org.orgId}>
               <TableCell className="font-medium">{org.name}</TableCell>
               <TableCell className="text-right">{org.role}</TableCell>

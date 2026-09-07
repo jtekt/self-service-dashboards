@@ -1,7 +1,6 @@
 import {
   GRAFANA_ADMIN_PASSWORD,
   GRAFANA_ADMIN_USERNAME,
-  GRAFANA_DEFAULT_ORG_ID,
   GRAFANA_URL,
 } from "@/config";
 import axios from "axios";
@@ -36,13 +35,15 @@ export async function createUser(newUser: NewUser) {
   try {
     const { data } = await axios.post(url, newUser, { auth });
     return data;
-  } catch (error: any) {
-    if (error.response) throw new Error(error.response.data.message);
+  } catch (error: unknown) {
+    const response = (error as { response?: { data?: { message?: string } } })
+      .response;
+    if (response) throw new Error(response.data?.message);
     throw new Error("User creation failed");
   }
 }
 
-export async function getUserInfo(loginOrEmail: String) {
+export async function getUserInfo(loginOrEmail: string) {
   // Used after login or registration to create content of JWT
   // The request must be sent authenticated as admin
   // https://grafana.com/docs/grafana/latest/developers/http_api/user/#get-single-user-by-usernamelogin-or-email

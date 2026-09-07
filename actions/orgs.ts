@@ -11,7 +11,12 @@ export async function getUserOrgsAction() {
   return await getUserOrgs(currentUser.id);
 }
 
-export async function createOrgForUser(prevState: any, formData: FormData) {
+type FormState = { message: string } | undefined;
+
+export async function createOrgForUser(
+  _prevState: FormState,
+  formData: FormData,
+): Promise<FormState> {
   const name = formData.get("name")?.toString();
   if (!name) return { message: "Missing name" };
 
@@ -21,10 +26,13 @@ export async function createOrgForUser(prevState: any, formData: FormData) {
   try {
     const { orgId } = await createOrg(name);
     await addUserToOrg(user.login, orgId, "Admin");
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error(error);
     // TODO: message -> error
-    return { message: error.response?.data?.message || "Org creation failed" };
+    const message =
+      (error as { response?: { data?: { message?: string } } }).response?.data
+        ?.message || "Org creation failed";
+    return { message };
   }
 
   redirect("/orgs");

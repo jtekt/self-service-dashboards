@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { env } from "next-runtime-env";
 
 import { loginAction } from "@/actions/auth";
@@ -14,7 +14,7 @@ export default function LoginPage() {
   const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION");
   const loginHint = env("NEXT_PUBLIC_LOGIN_HINT");
 
-  const [state, action] = useFormState(loginAction, { message: "" });
+  const [state, action] = useActionState(loginAction, { message: "" });
 
   return (
     <Card className="mx-auto max-w-md">

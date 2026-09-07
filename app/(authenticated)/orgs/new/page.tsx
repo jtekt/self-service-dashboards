@@ -2,12 +2,11 @@
 import { createOrgForUser } from "@/actions/orgs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useFormState } from "react-dom";
+import { useActionState } from "react";
 import { SubmitButton } from "@/components/SubmitButton";
 
 export default function Page() {
-  // TODO: useFormState vs useActionState?
-  const [state, handleOrgSubmit] = useFormState(createOrgForUser, undefined);
+  const [state, handleOrgSubmit] = useActionState(createOrgForUser, undefined);
 
   return (
     <form action={handleOrgSubmit} className="flex flex-col gap-4">
