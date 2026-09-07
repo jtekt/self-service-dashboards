@@ -12,6 +12,9 @@ const fontSans = FontSans({
 export const metadata: Metadata = {
   title: "Self-service dashboards",
   description: "Self-service dashboards",
+  icons: {
+    icon: "/icon.png",
+  },
 };
 
 export default function RootLayout({
