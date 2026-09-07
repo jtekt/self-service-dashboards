@@ -4,7 +4,7 @@ import { createSession, deleteSession } from "@/lib/session";
 import { checkUserCredentials, createUser, getUserInfo } from "@/lib/users";
 import { redirect } from "next/navigation";
 
-type FormState = { message: string };
+type ActionResult = { error: string } | undefined;
 
 function errorMessage(error: unknown, fallback: string): string {
   return (
@@ -14,27 +14,16 @@ function errorMessage(error: unknown, fallback: string): string {
 }
 
 export async function loginAction(
-  _prevState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const username = formData.get("username")?.toString();
-  const password = formData.get("password")?.toString();
-
-  if (!username) return { message: "Missing username" };
-  if (!password) return { message: "Missing password" };
-
-  const credentials = {
-    username,
-    password,
-  };
-
+  _prevState: ActionResult,
+  credentials: { username: string; password: string },
+): Promise<ActionResult> {
   try {
     await checkUserCredentials(credentials);
     const user = await getUserInfo(credentials.username);
     await createSession(user);
   } catch (error: unknown) {
     console.error(error);
-    return { message: errorMessage(error, "Login failed") };
+    return { error: errorMessage(error, "Login failed") };
   }
 
   redirect("/orgs");
@@ -46,43 +35,33 @@ export async function logoutAction() {
 }
 
 export async function registerUserAction(
-  _prevState: FormState,
-  formData: FormData,
-): Promise<FormState> {
-  const missingProperties = [
-    "login",
-    "name",
-    "email",
-    "password",
-    "passwordConfirm",
-  ].filter((k) => !formData.get(k));
-  if (missingProperties.length)
-    return { message: `Missing ${missingProperties.join(", ")}` };
-
-  const login = formData.get("login") as string;
-  const name = formData.get("name") as string;
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
-  const passwordConfirm = formData.get("passwordConfirm") as string;
-
-  if (passwordConfirm !== password)
-    return { message: "Passwords do not match" };
+  _prevState: ActionResult,
+  values: {
+    login: string;
+    name: string;
+    email: string;
+    password: string;
+    passwordConfirm: string;
+  },
+): Promise<ActionResult> {
+  if (values.passwordConfirm !== values.password)
+    return { error: "Passwords do not match" };
 
   const newUser = {
-    name,
-    email,
-    login,
-    password,
+    name: values.name,
+    email: values.email,
+    login: values.login,
+    password: values.password,
     OrgId: Number(GRAFANA_DEFAULT_ORG_ID),
   };
 
   try {
     await createUser(newUser);
-    const user = await getUserInfo(login);
+    const user = await getUserInfo(values.login);
     await createSession(user);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(error);
-    return { message: "User creation failed" };
+    return { error: errorMessage(error, "User creation failed") };
   }
 
   redirect("/orgs");

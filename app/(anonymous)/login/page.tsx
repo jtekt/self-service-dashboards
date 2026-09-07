@@ -1,67 +1,100 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { startTransition, useActionState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Loader2 } from "lucide-react";
 import { env } from "next-runtime-env";
 
 import { loginAction } from "@/actions/auth";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SubmitButton } from "@/components/SubmitButton";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+
+const formSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
 
 export default function LoginPage() {
-  const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION");
   const loginHint = env("NEXT_PUBLIC_LOGIN_HINT");
 
-  const [state, action] = useActionState(loginAction, { message: "" });
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { username: "", password: "" },
+  });
+
+  const [state, action, pending] = useActionState(loginAction, undefined);
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    startTransition(() => action(values));
+  }
 
   return (
     <Card className="mx-auto max-w-md">
       <CardHeader>
         <CardTitle>Login</CardTitle>
       </CardHeader>
-      <CardContent>
-        <form action={action} className="flex flex-col gap-4">
-          <div className="grid gap-1.5">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
+      <CardContent className="space-y-4">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
               name="username"
-              type="text"
-              placeholder="Username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Username</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Username" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
-
-          <div className="grid gap-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
+            <FormField
+              control={form.control}
               name="password"
-              type="password"
-              placeholder="Password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input type="password" placeholder="Password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
 
-          {loginHint && (
-            <p className="text-xs text-muted-foreground">{loginHint}</p>
-          )}
+            {loginHint && (
+              <p className="text-xs text-muted-foreground">{loginHint}</p>
+            )}
 
-          <SubmitButton text="Login" />
+            {state?.error && (
+              <p className="text-sm text-destructive">{state.error}</p>
+            )}
 
-          {state?.message && (
-            <p className="text-sm text-red-600">{state.message}</p>
-          )}
+            <Button type="submit" className="w-full" disabled={pending}>
+              {pending ? <Loader2 className="animate-spin" /> : "Login"}
+            </Button>
+          </form>
+        </Form>
 
-          {registrationPossible && (
-            <p className="text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="/register" className="font-bold text-primary">
-                Register here
-              </Link>
-            </p>
-          )}
-        </form>
+        <p className="text-center text-sm">
+          No account?{" "}
+          <Link href="/register" className="font-bold text-primary">
+            Register here
+          </Link>
+        </p>
       </CardContent>
     </Card>
   );

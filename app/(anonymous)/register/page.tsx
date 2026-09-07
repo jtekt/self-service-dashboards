@@ -1,89 +1,160 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { registerUserAction } from "@/actions/auth";
-import { useActionState } from "react";
+import Link from "next/link";
+import { startTransition, useActionState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Loader2 } from "lucide-react";
 import { env } from "next-runtime-env";
 
-import Link from "next/link";
-import { SubmitButton } from "@/components/SubmitButton";
+import { registerUserAction } from "@/actions/auth";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 
-export default function RegisterPage() {
-  const [state, handleRegisterSubmit] = useActionState(registerUserAction, {
-    message: "",
+const formSchema = z
+  .object({
+    login: z.string().min(1, "Username is required"),
+    name: z.string().min(1, "Name is required"),
+    email: z.string().email("Invalid email"),
+    password: z.string().min(1, "Password is required"),
+    passwordConfirm: z.string(),
+  })
+  .refine((data) => data.password === data.passwordConfirm, {
+    message: "Passwords don't match",
+    path: ["passwordConfirm"],
   });
 
-  const registrationPossible = !env("NEXT_PUBLIC_PREVENT_REGISTRATION");
+export default function RegisterPage() {
+  const registrationDisabled = env("NEXT_PUBLIC_PREVENT_REGISTRATION");
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      login: "",
+      name: "",
+      email: "",
+      password: "",
+      passwordConfirm: "",
+    },
+  });
+
+  const [state, action, pending] = useActionState(registerUserAction, undefined);
+
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    startTransition(() => action(values));
+  }
 
   return (
-    <>
-      {registrationPossible ? (
-        <form
-          action={handleRegisterSubmit}
-          className="flex flex-col items-center gap-4 max-w-xl mx-auto my-6"
-        >
-          <h2 className="text-4xl">Register</h2>
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="email">Email</Label>
-            <Input type="email" id="email" name="email" placeholder="Email" />
-          </div>
+    <Card className="mx-auto max-w-md">
+      <CardHeader>
+        <CardTitle>Register</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {registrationDisabled ? (
+          <p className="text-sm text-muted-foreground">
+            User registration is disabled on this instance.
+          </p>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="login"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Username</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Username" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="Email" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="Password" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="passwordConfirm"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Confirm password"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="name">Name</Label>
-            <Input type="text" id="name" name="name" placeholder="Name" />
-          </div>
+              {state?.error && (
+                <p className="text-sm text-destructive">{state.error}</p>
+              )}
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="login">Username</Label>
-            <Input type="text" id="login" name="login" placeholder="Username" />
-          </div>
+              <Button type="submit" className="w-full" disabled={pending}>
+                {pending ? <Loader2 className="animate-spin" /> : "Register"}
+              </Button>
+            </form>
+          </Form>
+        )}
 
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Password"
-            />
-          </div>
-
-          <div className="grid w-full max-w-sm items-center gap-1.5">
-            <Label htmlFor="passwordConfirm">Password confirm</Label>
-            <Input
-              type="password"
-              id="passwordConfirm"
-              name="passwordConfirm"
-              placeholder="Password confirm"
-            />
-          </div>
-
-          <div className="flex justify-center">
-            <SubmitButton text="Register" />
-          </div>
-
-          {state.message ? (
-            <p className="text-red-600">{state?.message}</p>
-          ) : null}
-
-          <div className="text-center">
-            Already have an account? Click{" "}
-            <Link href="/login" className="font-bold text-primary">
-              here
-            </Link>{" "}
-            to log in
-          </div>
-        </form>
-      ) : (
-        <>
-          {registrationPossible === false ? (
-            <div>Registration is not possible on this instance</div>
-          ) : (
-            <div>Loading...</div>
-          )}
-        </>
-      )}
-    </>
+        <p className="text-center text-sm">
+          Already have an account?{" "}
+          <Link href="/login" className="font-bold text-primary">
+            Login here
+          </Link>
+        </p>
+      </CardContent>
+    </Card>
   );
 }
