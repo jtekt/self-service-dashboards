@@ -78,7 +78,7 @@ export default function RegisterPage() {
       ) : (
         <>
           {registrationPossible === false ? (
-            <div>Reigstration is not possible on this instance</div>
+            <div>Registration is not possible on this instance</div>
           ) : (
             <div>Loading...</div>
           )}
