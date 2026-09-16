@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: self-service-grafana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: self-service-grafana
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: self-service-grafana
+    spec:
+      containers:
+        - name: self-service-grafana
+          image: ${CONTAINER_IMAGE_TAGGED}
+          env:
+            - name: GRAFANA_URL
+              value: http://grafana.grafana:3000
+            - name: NEXT_PUBLIC_PREVENT_REGISTRATION
+              value: "true"
+            - name: NEXT_PUBLIC_LOGIN_HINT
+              value: "ユーザー名: 00 + 社員番号、パスワード: 個人端末と同じ"
+          envFrom:
+            - secretRef:
+                name: self-service-grafana-es
+          resources:
+            requests:
+              memory: "80Mi"
+              cpu: "10m"
+            limits:
+              memory: "800Mi"
+              cpu: "500m"
+      imagePullSecrets:
+        - name: ecr-credentials
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: self-service-grafana
+spec:
+  ports:
+    - port: 3000
+  selector:
+    app.kubernetes.io/name: self-service-grafana
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: self-service-grafana
+  annotations:
+    alb.ingress.kubernetes.io/success-codes: 200-399
+
+    # TODO: remove once configured at IngressClassParams level
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+
+
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Self-Service Suite
+    gethomepage.dev/name: Self-service Grafana
+    gethomepage.dev/description: Allows users to create organizations in Grafana on their own
+    gethomepage.dev/icon: http://gitlab.jtektrnd.net/uploads/-/system/project/avatar/2261/self-grafana.png
+spec:
+  rules:
+  - host: self-service-grafana.ssc.jtektrnd.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: self-service-grafana
+            port:
+              number: 3000
+
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: self-service-grafana
+spec:
+  refreshInterval: 1h0m0s
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  dataFrom:
+    - extract:
+        key: eks/eso/public/self-service-grafana
+  target:
+    name: self-service-grafana-es
+    creationPolicy: Orphan
