@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/toggle-mode";
 import { HelpLink } from "@/components/help-link";
+import { AppsLink } from "@/components/apps-link";
 import { LogoutButton } from "@/components/logout-button";
 import { AppIcon } from "@/components/app-icon";
 import { PublicEnvScript } from "next-runtime-env";
@@ -54,6 +55,7 @@ export default async function RootLayout({
               Self-Service Grafana
             </Link>
             <ModeToggle />
+            <AppsLink />
             <HelpLink />
             {user && <LogoutButton />}
           </header>

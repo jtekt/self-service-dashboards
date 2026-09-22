@@ -22,6 +22,8 @@ spec:
               value: "true"
             - name: NEXT_PUBLIC_LOGIN_HINT
               value: "ユーザー名: 00 + 社員番号、パスワード: 個人端末と同じ"
+            - name: NEXT_PUBLIC_APPS_URL
+              value: https://homepage.ssc.jtektrnd.net
           envFrom:
             - secretRef:
                 name: self-service-grafana-es
