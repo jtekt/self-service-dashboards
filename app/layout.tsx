@@ -61,7 +61,7 @@ export default async function RootLayout({
           </header>
           <main className="mx-auto w-full max-w-3xl flex-1 p-4">{children}</main>
           <footer className="border-t p-4 text-center text-sm">
-            Self-Service Grafana | JTEKT Corporation
+            Self-Service Grafana | JTEKT Corporation | {process.env.NEXT_PUBLIC_APP_VERSION ?? "dev"}
           </footer>
         </ThemeProvider>
       </body>
