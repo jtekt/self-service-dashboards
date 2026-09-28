@@ -1,14 +1,6 @@
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { buttonVariants } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { getUserOrgsAction } from "@/actions/orgs";
 import { GRAFANA_DEFAULT_ORG_ID } from "@/config";
 import DeleteOrgButton from "@/components/delete-org-button";
@@ -16,40 +8,39 @@ import DeleteOrgButton from "@/components/delete-org-button";
 type Org = { orgId: number; name: string; role: string };
 
 export default async function Page() {
-  const data = await getUserOrgsAction();
+  const orgs = (await getUserOrgsAction()) as Org[];
 
   return (
-    <>
-      <div className="flex justify-between items-center">
-        <h1 className="text-4xl my-4">My Organizations</h1>
-
-        <Button asChild>
-          <Link href="/orgs/new">Create new</Link>
-        </Button>
+    <div className="mx-auto max-w-lg space-y-6 py-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Your organizations</h1>
+        <Link href="/orgs/new" className={buttonVariants()}>
+          New organization
+        </Link>
       </div>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="">Org name</TableHead>
-            <TableHead className="text-right">Role</TableHead>
-            <TableHead className="w-0" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {(data as Org[]).map((org) => (
-            <TableRow key={org.orgId}>
-              <TableCell className="font-medium">{org.name}</TableCell>
-              <TableCell className="text-right">{org.role}</TableCell>
-              <TableCell className="text-right">
+
+      {orgs.length === 0 ? (
+        <p className="text-muted-foreground">
+          You aren&apos;t a member of any organizations yet.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {orgs.map((org) => (
+            <Card key={org.orgId} className="rounded-xl">
+              <CardContent className="flex items-center justify-between gap-4 p-6">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{org.name}</p>
+                  <p className="text-sm text-muted-foreground">{org.role}</p>
+                </div>
                 {org.role === "Admin" &&
                   String(org.orgId) !== GRAFANA_DEFAULT_ORG_ID && (
                     <DeleteOrgButton orgId={org.orgId} name={org.name} />
                   )}
-              </TableCell>
-            </TableRow>
+              </CardContent>
+            </Card>
           ))}
-        </TableBody>
-      </Table>
-    </>
+        </div>
+      )}
+    </div>
   );
 }
