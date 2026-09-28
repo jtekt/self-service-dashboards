@@ -7,6 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
 import { env } from "next-runtime-env";
+import { isEnabled } from "@/lib/utils";
 
 import { registerUserAction } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,9 @@ const formSchema = z
   });
 
 export default function RegisterPage() {
-  const registrationDisabled = env("NEXT_PUBLIC_PREVENT_REGISTRATION");
+  const registrationDisabled = isEnabled(
+    env("NEXT_PUBLIC_PREVENT_REGISTRATION"),
+  );
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

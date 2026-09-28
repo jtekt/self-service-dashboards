@@ -1,7 +1,11 @@
 "use server";
-import { GRAFANA_DEFAULT_ORG_ID } from "@/config";
+import {
+  GRAFANA_DEFAULT_ORG_ID,
+  NEXT_PUBLIC_PREVENT_REGISTRATION,
+} from "@/config";
 import { createSession, deleteSession } from "@/lib/session";
 import { checkUserCredentials, createUser, getUserInfo } from "@/lib/users";
+import { isEnabled } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
 type ActionResult = { error: string } | undefined;
@@ -44,6 +48,9 @@ export async function registerUserAction(
     passwordConfirm: string;
   },
 ): Promise<ActionResult> {
+  if (isEnabled(NEXT_PUBLIC_PREVENT_REGISTRATION))
+    return { error: "This instance does not allow user registration" };
+
   if (values.passwordConfirm !== values.password)
     return { error: "Passwords do not match" };
 
