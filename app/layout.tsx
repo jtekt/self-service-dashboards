@@ -18,8 +18,8 @@ const fontSans = FontSans({
 });
 
 export const metadata: Metadata = {
-  title: "Self-Service Grafana",
-  description: "Self-service dashboards",
+  title: "Self-Service Dashboards",
+  description: "Self-Service Dashboards",
 };
 
 export default async function RootLayout({
@@ -52,16 +52,19 @@ export default async function RootLayout({
               className="mr-auto flex items-center gap-2 text-base font-semibold"
             >
               <AppIcon className="size-5 shrink-0" />
-              Self-Service Grafana
+              Self-Service Dashboards
             </Link>
             <ModeToggle />
             <AppsLink />
             <HelpLink />
             {user && <LogoutButton />}
           </header>
-          <main className="mx-auto w-full max-w-3xl flex-1 p-4">{children}</main>
+          <main className="mx-auto w-full max-w-3xl flex-1 p-4">
+            {children}
+          </main>
           <footer className="border-t p-4 text-center text-sm">
-            Self-Service Grafana | JTEKT Corporation | {process.env.NEXT_PUBLIC_APP_VERSION ?? "dev"}
+            Self-Service Dashboards | JTEKT Corporation |{" "}
+            {process.env.NEXT_PUBLIC_APP_VERSION ?? "dev"}
           </footer>
         </ThemeProvider>
       </body>
