@@ -59,3 +59,14 @@ export async function getUserOrgs(userId: number | string) {
   const { data } = await axios.get(url, { auth });
   return data;
 }
+
+export async function deleteOrg(orgId: string | number) {
+  const auth = {
+    username: GRAFANA_ADMIN_USERNAME,
+    password: GRAFANA_ADMIN_PASSWORD,
+  };
+
+  const url = `${GRAFANA_URL}/api/orgs/${orgId}`;
+  const { data } = await axios.delete(url, { auth });
+  return data;
+}

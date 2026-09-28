@@ -10,6 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { getUserOrgsAction } from "@/actions/orgs";
+import { GRAFANA_DEFAULT_ORG_ID } from "@/config";
+import DeleteOrgButton from "@/components/delete-org-button";
 
 type Org = { orgId: number; name: string; role: string };
 
@@ -30,6 +32,7 @@ export default async function Page() {
           <TableRow>
             <TableHead className="">Org name</TableHead>
             <TableHead className="text-right">Role</TableHead>
+            <TableHead className="w-0" />
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -37,6 +40,12 @@ export default async function Page() {
             <TableRow key={org.orgId}>
               <TableCell className="font-medium">{org.name}</TableCell>
               <TableCell className="text-right">{org.role}</TableCell>
+              <TableCell className="text-right">
+                {org.role === "Admin" &&
+                  String(org.orgId) !== GRAFANA_DEFAULT_ORG_ID && (
+                    <DeleteOrgButton orgId={org.orgId} name={org.name} />
+                  )}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
