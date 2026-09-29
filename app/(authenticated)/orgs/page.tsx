@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlusIcon } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { getUserOrgsAction } from "@/actions/orgs";
@@ -14,8 +15,13 @@ export default async function Page() {
     <div className="mx-auto max-w-lg space-y-6 py-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Your organizations</h1>
-        <Link href="/orgs/new" className={buttonVariants()}>
-          New organization
+        <Link
+          href="/orgs/new"
+          className={buttonVariants({ size: "icon" })}
+          aria-label="New organization"
+          title="New organization"
+        >
+          <PlusIcon className="size-4" />
         </Link>
       </div>
 
