@@ -32,8 +32,8 @@ export default async function Page() {
       ) : (
         <div className="space-y-3">
           {orgs.map((org) => (
-            <Card key={org.orgId} className="rounded-xl">
-              <CardContent className="flex items-center justify-between gap-4 p-6">
+            <Card key={org.orgId}>
+              <CardContent className="flex items-center justify-between gap-4">
                 <div className="min-w-0">
                   <p className="truncate font-medium">{org.name}</p>
                   <p className="text-sm text-muted-foreground">{org.role}</p>
