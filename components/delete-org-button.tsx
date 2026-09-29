@@ -1,59 +1,92 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Check, Ban, Trash, Loader2 } from "lucide-react";
-import { deleteOrgForUser } from "@/actions/orgs";
 import { startTransition, useActionState, useState } from "react";
+import { Trash2Icon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
+import { deleteOrgForUser } from "@/actions/orgs";
 
 type Props = {
   orgId: number;
   name: string;
 };
 
-export default function DeleteOrgButton(props: Props) {
-  const [waitingForConfirm, setWaitingForConfirm] = useState(false);
-
+export default function DeleteOrgButton({ orgId, name }: Props) {
   const [state, action, pending] = useActionState(
-    () => deleteOrgForUser(props.orgId),
+    () => deleteOrgForUser(orgId),
     undefined,
   );
+  const [open, setOpen] = useState(false);
+
+  // On success the org disappears from the list, unmounting this dialog
+  function onConfirm() {
+    startTransition(() => action());
+  }
 
   return (
-    <div className="flex flex-col items-end gap-1">
-      {waitingForConfirm ? (
-        <div className="inline-flex gap-2">
-          <Button
-            size="icon"
-            variant="destructive"
-            onClick={() => startTransition(() => action())}
-            disabled={pending}
-            aria-label={`Confirm deletion of ${props.name}`}
-          >
-            {pending ? <Loader2 className="animate-spin" /> : <Check />}
-          </Button>
-          <Button
-            size="icon"
-            variant="outline"
-            onClick={() => setWaitingForConfirm(false)}
-            disabled={pending}
-            aria-label="Cancel"
-          >
-            <Ban />
-          </Button>
-        </div>
-      ) : (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button
+          variant="destructive"
           size="icon"
-          variant="ghost"
-          onClick={() => setWaitingForConfirm(true)}
-          aria-label={`Delete ${props.name}`}
+          aria-label={`Delete ${name}`}
+          title="Delete organization"
         >
-          <Trash />
+          <Trash2Icon />
         </Button>
-      )}
-      {state?.error && (
-        <p className="text-sm text-destructive">{state.error}</p>
-      )}
-    </div>
+      </DialogTrigger>
+
+      <DialogContent className="space-y-2">
+        <DialogHeader>
+          <DialogTitle>Delete organization</DialogTitle>
+          <DialogDescription>
+            You are about to permanently delete the following organization
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="rounded bg-accent p-2 font-mono">{name}</div>
+
+        <p className="text-destructive">
+          Its dashboards, data sources and alerts are deleted with it. This
+          action cannot be undone.
+        </p>
+
+        {state?.error && (
+          <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+            {state.error}
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={pending}
+          >
+            Cancel
+          </Button>
+
+          <Button variant="destructive" onClick={onConfirm} disabled={pending}>
+            {pending ? (
+              <span className="flex items-center gap-2">
+                <Spinner />
+                Deleting…
+              </span>
+            ) : (
+              "Delete organization"
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
