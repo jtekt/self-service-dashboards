@@ -11,10 +11,13 @@ import { redirect } from "next/navigation";
 type ActionResult = { error: string } | undefined;
 
 function errorMessage(error: unknown, fallback: string): string {
-  return (
-    (error as { response?: { data?: { message?: string } } }).response?.data
-      ?.message || fallback
-  );
+  // Axios errors carry Grafana's message in the response; errors rethrown by
+  // lib/users.ts carry it in `message`
+  const { response, message } = error as {
+    response?: { data?: { message?: string } };
+    message?: string;
+  };
+  return response?.data?.message || message || fallback;
 }
 
 export async function loginAction(
