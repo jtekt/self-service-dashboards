@@ -84,12 +84,6 @@ apiVersion: external-secrets.io/v1
 kind: ExternalSecret
 metadata:
   name: self-service-grafana
-  annotations:
-    gethomepage.dev/enabled: "true"
-    gethomepage.dev/group: Self-Service Suite
-    gethomepage.dev/name: Self-service Grafana
-    gethomepage.dev/description: Allows users to create organizations in Grafana on their own
-    gethomepage.dev/icon: http://gitlab.jtektrnd.net/uploads/-/system/project/avatar/2261/self-grafana.png
 spec:
   refreshInterval: 1h0m0s
   secretStoreRef:
@@ -106,6 +100,12 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: self-service-grafana
+  annotations:
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Self-Service Suite
+    gethomepage.dev/name: Self-service Grafana
+    gethomepage.dev/description: Allows users to create organizations in Grafana on their own
+    gethomepage.dev/icon: http://gitlab.jtektrnd.net/uploads/-/system/project/avatar/2261/self-grafana.png
 spec:
   parentRefs:
     - name: eg
